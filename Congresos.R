@@ -3,27 +3,42 @@ pacman::p_load(tidyverse,readxl, plyr, dplyr, ggplot2, tidyr, tidyverse, extrafo
 
 #read legislative elections datasets
 
-congreso<- read_xlsx("CongresosLocalesMR.xlsx")
+elecciones<- read_xlsx("CongresosLocalesMR.xlsx")
 summary(congreso)
 
-congreso$winner<- as.factor(congreso$winner)
-congreso$second<- as.factor(congreso$second)
+elecciones$winner<- as.factor(elecciones$winner)
+elecciones$second<- as.factor(elecciones$second)
+congreso <- elecciones[elecciones$election_type=="congress",]
+AG21 <- congreso[congreso$id_state==1 & congreso$election_year==2021,]
+AG18 <- congreso[congreso$id_state==1 & congreso$election_year==2018,]
+AG15 <- congreso[congreso$id_state==1 & congreso$election_year==2015,]
 QR16 <- congreso[congreso$id_state== 23 & congreso$election_year==2016,]
 QR19 <- congreso[congreso$id_state== 23 & congreso$election_year==2019,]
 D21 <- congreso[congreso$id_state== 10 & congreso$election_year==2021,]
 D18 <- congreso[congreso$id_state== 10 & congreso$election_year==2018,]
 H21 <- congreso[congreso$id_state== 13 & congreso$election_year==2021,]
 H18 <- congreso[congreso$id_state== 13 & congreso$election_year==2018,]
-GQR <- congreso[congreso$id_state== 23 & congreso$election_type=="governor",]
-GH <- congreso[congreso$id_state== 13 & congreso$election_type=="governor",]
-GD <- congreso[congreso$id_state== 10 & congreso$election_type=="governor",]
-
+OX21 <- congreso[congreso$id_state== 20 & congreso$election_year==2021,]
+OX18 <- congreso[congreso$id_state==20 & congreso$election_year==2018,]
+TM21 <- congreso[congreso$id_state== 28 & congreso$election_year==2021,]
+TM18 <- congreso[congreso$id_state==28 & congreso$election_year==2018,]
+GQR <- elecciones[elecciones$id_state== 23 & elecciones$election_type=="governor",]
+GH <- elecciones[elecciones$id_state== 13 & elecciones$election_type=="governor",]
+GD <- elecciones[elecciones$id_state== 10 & elecciones$election_type=="governor",]
+GA <- elecciones[elecciones$id_state== 1 & elecciones$election_type=="governor",]
+GO <- elecciones[elecciones$id_state== 20 & elecciones$election_type=="governor",]
+GT <- elecciones[elecciones$id_state== 28 & elecciones$election_type=="governor",]
 
 Dtto <- st_read("DISTRITO_LOCAL.shp")
 
 QR <- Dtto[Dtto$ENTIDAD == 23,]
 D <- Dtto[Dtto$ENTIDAD == 10,]
 H <- Dtto[Dtto$ENTIDAD == 13,]
+A <- Dtto[Dtto$ENTIDAD == 1,]
+O <- Dtto[Dtto$ENTIDAD == 20,]
+TM <- Dtto[Dtto$ENTIDAD == 28,]
+
+#
 
 #congreso 2016
 
@@ -108,32 +123,72 @@ mapadgogob <- DGOGob %>% ggplot() + geom_sf(fill= ifelse( DGOGob$winner == "PAN"
 mapadgogob
 
 
+#Aguascalientes
+
+AG21 <- merge(A, AG21, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapaa21 <- AG21 %>% ggplot() + geom_sf(fill= ifelse( AG21$winner == "PAN", "#001D82", ifelse( AG21$winner=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapaa21
+
+AG18 <- merge(A, AG18, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapaa18 <- AG18 %>% ggplot() + geom_sf(fill= ifelse( AG18$winner == "PAN", "#001D82", ifelse( AG18$winner=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapaa18
+
+AGob <- merge(A, GA, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapaagsgob <- AGob %>% ggplot() + geom_sf(fill= ifelse( AGob$winner == "PAN", "#001D82", ifelse( AGob$winner=="PRI","#42A03F","#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapaagsgob
+
+#Oaxaca
+
+O21 <- merge(O, OX21, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapao21 <- O21 %>% ggplot() + geom_sf(fill= ifelse( O21$winner == "PAN", "#001D82", ifelse( O21$winner=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapao21
+
+O18 <- merge(O, OX18, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapao18 <- O18 %>% ggplot() + geom_sf(fill= ifelse( O18$winner == "PAN", "#001D82", ifelse( O18$winner=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapao18
+
+OGob <- merge(O, GO, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapaoxcgob <- OGob %>% ggplot() + geom_sf(fill= ifelse( OGob$winner == "PAN", "#001D82", ifelse( OGob$winner=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapaoxcgob
+
+#Tamaulipas
+
+TM21 <- merge(TM, TM21, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapat21 <- TM21 %>% ggplot() + geom_sf(fill= ifelse( TM21$winner == "PAN", "#001D82", ifelse( TM21$winner=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapat21
+
+TM18 <- merge(TM, TM18, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
+
+mapat18 <- TM18 %>% ggplot() + geom_sf(fill= ifelse( TM18$winner == "PAN", "#001D82", ifelse( TM18$winner=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+mapat18
+
+mapzoom <- TM18 %>% filter(DISTRITO_L==11) %>% ggplot() + geom_sf(fill= alpha("#B1191E")) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Distrito 11") + theme(plot.title = element_text(face = "bold", size = 6, family = "Lato", hjust = 0.5))
+
+mapa <- grid.arrange( grobs = list(mapat18, mapzoom),layout_matrix = rbind(c(1,  1, 1),
+                                                                       c(1, 1, 2),
+                                                                       c(1, 1, 2)))
 
 
+TGob <- merge(TM, GT, by.x="DISTRITO_L", by.y="id_district", all.x=TRUE, all.y=TRUE)
 
+mapatamgob <- TGob %>% ggplot() + geom_sf(fill= ifelse( TGob$winner == "PAN", "#001D82", ifelse( TGob$winner=="PRI","#42A03F","#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
 
-
-gob16 <- mapadtto %>% ggplot() + geom_sf(fill= ifelse( mapadtto$Gobernador == "PAN","#001D82", "#42A03F"), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
-
-gob16
-zoomgob <- mapadtto %>% filter(DISTRITO_L >= 2 & DISTRITO_L <= 7 )
-
-mapzoomg <- zoomgob %>% ggplot() + geom_sf(fill= ifelse( zoomgob$Gobernador == "PAN","#001D82", "#42A03F"), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
-mapzoomg
-
-mapagob <- grid.arrange( grobs = list(gob16, mapzoomg),layout_matrix = rbind(c(1,  1, 1),
-                                                                             c(1, 1,  2),
-                                                                             c(1, 1, 2)))
-
-mapagob
-
-#congreso 2019
-mapadtto2 <- merge(DttoSelect, cong19, by.x="DISTRITO_L", by.y="ID_DISTRITO", all.x=TRUE, all.y=TRUE)
-
-diputados19 <- mapadtto2 %>% ggplot() + geom_sf(fill= ifelse( mapadtto2$Ganador == "PAN", "#001D82", ifelse( mapadtto2$Ganador=="PRI","#42A03F", "#B1191E")), color="white") + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
-
-diputados19
-
+mapatamgob
 
 
 #B1191E morena

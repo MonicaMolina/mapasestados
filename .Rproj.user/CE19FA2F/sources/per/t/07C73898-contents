@@ -1,0 +1,76 @@
+pacman::p_load(tidyverse,readxl, plyr, dplyr, ggplot2, tidyr, tidyverse, extrafont, gganimate, gapminder, plotly, shiny, sp, sf, foreign, readr, tmap, raster, gdal, rgdal, ggrepel, gridExtra, grid, lattice)
+
+Ranking <- read_xlsx("GobTamaulipasdtto.xlsx")
+summary(Ranking)
+Ranking.2016 <- Ranking[Ranking$año == 2016,]
+Ranking.2010 <- Ranking[Ranking$año == 2010,]
+
+municipio <- readOGR(".", "MUNICIPIO")
+summary(municipio)
+dttolocal <- readOGR(".", "DISTRITO_LOCAL")
+summary(dttolocal)
+
+# now select 
+municipio.selection <- municipio[municipio$ENTIDAD == 28,]
+
+dttolocal.selection <- dttolocal[dttolocal$ENTIDAD == 28,]
+
+selection10 <- merge(dttolocal.selection, Ranking.2010, by.x="DISTRITO_L", by.y="dtto", all.x=TRUE, all.y=TRUE)
+summary(selection10)
+
+selection16 <- merge(dttolocal.selection, Ranking.2016, by.x="DISTRITO_L", by.y="dtto", all.x=TRUE, all.y=TRUE)
+summary(selection16)
+
+selection16$PARTIDO_GANADOR <- as.integer(selection16$PARTIDO_GANADOR)
+
+
+mun.tamaulipas <- ggplot() + geom_polygon(data = municipio.selection, 
+                              aes(long, lat, group = group),
+                              color = "255", fill = "green")
+mun.tamaulipas
+
+dtto.tamaulipas <- ggplot() + geom_polygon(data = dttolocal.selection, 
+                                          aes(long, lat, group = group),
+                                          color = "255", fill = "orange")
+dtto.tamaulipas
+
+summary(selection)
+
+Municipio <- st_read("MUNICIPIO.shp")
+
+MunSelect <- Municipio[Municipio$ENTIDAD == 28,]
+
+mapamunicipio <- merge(MunSelect, Ranking, by.x="SECCION", by.y="Sección", all.x=TRUE, all.y=TRUE)
+
+Dtto <- st_read("DISTRITO_LOCAL.shp")
+
+DttoSelect <- Dtto[Dtto$ENTIDAD == 28,]
+
+mapadtto <- merge(DttoSelect, Ranking.2016, by.x="DISTRITO_L", by.y="dtto", all.x=TRUE, all.y=TRUE)
+
+gob16 <- mapadtto %>% ggplot() + geom_sf(fill= alpha(ifelse( mapadtto$PARTIDO_GANADOR == 1, "blue", "green"),0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Elección de Gobernador Distritos Ganados", subtitle = "Tamaulipas, 2016", caption = "Datos: IETAM Tamaulipas, 2016") + theme(plot.title = element_text(face = "bold", size = 12, family = "Lato", hjust = 0.5), plot.subtitle = element_text(face = "bold", size = 10, family = "Lato", hjust = 0.5, vjust= 0.95), plot.caption = element_text(face = "bold", size = 10, family = "Lato", hjust = 0.5, vjust= 0.2))
+
+dip16 <- mapadtto %>% ggplot() + geom_sf(fill= alpha(ifelse( mapadtto$DIPUTADO_LOCAL == 1, "blue", "green"),0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Tamaulipas, 2016") + theme(plot.title = element_text(face = "bold", size = 8, family = "Lato", hjust = 0.5))
+
+dip21 <- mapadtto %>% ggplot() + geom_sf(fill= alpha(ifelse( mapadtto$DIP_21 == 1, "blue", ifelse( mapadtto$DIP_21 == 2,"red" ,"green")),0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Tamaulipas, 2021") + theme(plot.title = element_text(face = "bold", size = 8, family = "Lato", hjust = 0.5))
+
+dip13 <- mapadtto %>% ggplot() + geom_sf(fill= alpha(ifelse( mapadtto$DIP_13 == 1, "blue", ifelse( mapadtto$DIP_13 == 2,"red" ,"green")),0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Tamaulipas, 2013") + theme(plot.title = element_text(face = "bold", size = 8, family = "Lato", hjust = 0.5))
+
+dip10 <- mapadtto %>% ggplot() + geom_sf(fill= alpha("green",0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Tamaulipas, 2010") + theme(plot.title = element_text(face = "bold", size = 8, family = "Lato", hjust = 0.5))
+
+gob10 <- mapadtto %>% ggplot() + geom_sf(fill= alpha("green",0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Elección de Gobernador distritos ganados", subtitle = "Tamaulipas, 2010", caption = "Datos: IETAM Tamaulipas, 2010") + theme(plot.title = element_text(face = "bold", size = 12, family = "Lato", hjust = 0.5), plot.subtitle = element_text(face = "bold", size = 10, family = "Lato", hjust = 0.5, vjust= 0.95), plot.caption = element_text(face = "bold", size = 10, family = "Lato", hjust = 0.5, vjust= 0.2))
+
+mapzoom <- mapadtto %>% filter(DISTRITO_L==11) %>% ggplot() + geom_sf(fill= alpha("red",0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Distrito 11") + theme(plot.title = element_text(face = "bold", size = 6, family = "Lato", hjust = 0.5))
+
+map <- mapadtto %>% ggplot() + geom_sf(fill= alpha(ifelse( mapadtto$DIP_19 == 1, "blue", ifelse( mapadtto$DIP_19 == 2,"red" ,"green")),0.5)) + theme_minimal() + theme(axis.title = element_blank(), axis.text=element_blank(), panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank()) + labs(title = "Tamaulipas, 2019") + theme(plot.title = element_text(face = "bold", size = 8, family = "Lato", hjust = 0.5)) 
+
+mapa <- grid.arrange( grobs = list(map, mapzoom),layout_matrix = rbind(c(1,  1, 1),
+                                                        c(1, 1, 2),
+                                                        c(1, 1, 2)))
+
+gob <- grid.arrange( grobs = list(gob10, gob16), ncol=2)
+
+congreso <- grid.arrange( grobs = list(dip10, dip13, dip16, mapa, dip21), ncol=2,
+                          top = textGrob("Elecciones Diputado Local por Mayoría Relativa",gp=gpar(fontsize=10, fontfamily="Lato",fontface="bold")), bottom = textGrob("Datos: IETAM Tamaulipas", gp=gpar(fontsize=8, fontfamily="Lato")))
+
+                          
